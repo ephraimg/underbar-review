@@ -219,6 +219,15 @@
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined) {
+      iterator = _.identity;
+    } 
+    for (var i = 0; i < collection.length; i++) {
+      if (!!iterator(collection[i])) {
+        return true;
+      }
+    }    
+    return false;
   };
 
 
@@ -241,11 +250,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var arr = Array.from(arguments).slice(1);
+    for (var el = 0; el < arr.length; el++) {
+      for (var key in arr[el]) {
+        obj[key] = arr[el][key];
+      }
+    }
+    return obj;
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var arr = Array.from(arguments).slice(1);
+    for (var el = 0; el < arr.length; el++) {
+      for (var key in arr[el]) {
+        if (!obj.hasOwnProperty(key)) {
+          obj[key] = arr[el][key];
+        }
+      }
+    }
+    return obj;
   };
 
 
@@ -280,7 +305,7 @@
     };
   };
 
-  // Memorize an expensive function's results by storing them. You may assume
+  // Memoize an expensive function's results by storing them. You may assume
   // that the function only takes primitives as arguments.
   // memoize could be renamed to oncePerUniqueArgumentList; memoize does the
   // same thing as once, but based on many sets of unique arguments.
@@ -289,6 +314,16 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var storage = {};
+    return function() {
+      var strArgs = JSON.stringify(arguments);
+      if (storage.hasOwnProperty(strArgs)) {
+        return storage[strArgs];
+      } else {
+        storage[strArgs] = func.apply(this, arguments);
+        return storage[strArgs];
+      }
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -298,6 +333,9 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments);
+    args = args.slice(2);
+    setTimeout(function() { func.apply(this, args); }, wait);
   };
 
 
