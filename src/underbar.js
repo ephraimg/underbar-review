@@ -349,7 +349,15 @@
   // TIP: This function's test suite will ask that you not modify the original
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
-  _.shuffle = function(array) {
+  _.shuffle = function(array2) {
+    var array = array2.slice();
+    for (let idx = array.length - 1; idx > 0; idx--) {
+      var temp = array[idx];
+      var randIdx = Math.floor(Math.random() * (idx + 1));
+      array[idx] = array[randIdx];
+      array[randIdx] = temp;
+    }
+    return array;
   };
 
 
@@ -364,6 +372,17 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    let output = [];
+    if (typeof functionOrKey === 'string') {
+      _.each(collection, function(el) {
+        output.push(el[functionOrKey].apply(el));
+      }); 
+    } else {
+      _.each(collection, function(el) {
+        output.push(functionOrKey.apply(el));
+      });  
+    }
+    return output;
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -371,6 +390,31 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    var compare;
+    var marr;
+    if (typeof iterator === 'string') {
+      marr = collection.map((el, idx) => {
+        return { el: el, idx: idx, iter: el[iterator] };
+      });
+      compare = (left, right) => {
+        if (left.iter < right.iter || right.iter === undefined) { return -1; }
+        if (left.iter > right.iter || left.iter === undefined) { return 1; }
+        return left.idx - right.idx;
+      }
+      marr.sort(compare);
+      return _.pluck(marr, 'el');
+    } else {
+      marr = collection.map((el, idx) => {
+        return { el: el, idx: idx, iter: iterator(el) };
+      });
+      compare = (left, right) => {
+        if (left.iter < right.iter || right.iter === undefined) { return -1; }
+        if (left.iter > right.iter || left.iter === undefined) { return 1; }
+        return left.idx - right.idx;
+      }
+      marr.sort(compare);
+      return _.pluck(marr, 'el');
+    }
   };
 
   // Zip together two or more arrays with elements of the same index
