@@ -400,7 +400,7 @@
         if (left.iter < right.iter || right.iter === undefined) { return -1; }
         if (left.iter > right.iter || left.iter === undefined) { return 1; }
         return left.idx - right.idx;
-      }
+      };
       marr.sort(compare);
       return _.pluck(marr, 'el');
     } else {
@@ -411,7 +411,7 @@
         if (left.iter < right.iter || right.iter === undefined) { return -1; }
         if (left.iter > right.iter || left.iter === undefined) { return 1; }
         return left.idx - right.idx;
-      }
+      };
       marr.sort(compare);
       return _.pluck(marr, 'el');
     }
@@ -423,6 +423,18 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var args = Array.from(arguments);
+    var lengths = args.map(a => a.length);
+    var longest = args[lengths.indexOf(Math.max.apply(Math, lengths))];
+    return longest.map((el, idx) => {
+      var newVal = [el];
+      for (var i = 0; i < args.length; i++) {
+        if (args[i] !== longest) {
+          newVal.push(args[i][idx]);
+        }
+      }
+      return newVal;
+    });
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -430,16 +442,53 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    if (!Array.isArray(nestedArray)) {
+      return nestedArray;
+    }
+    var output = [];
+    nestedArray.forEach(function(el) {
+      if (!Array.isArray(el)) {
+        output.push(el);
+      } else {
+        el.forEach(function(el2) {
+          output.push(_.flatten(el2));
+        });
+      }
+    });
+    return output;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var args = Array.from(arguments);
+    var output = [];
+    var comb = [];
+    args.forEach(el => comb = comb.concat(el));
+    var s = new Set(comb); 
+    s.forEach(el => {
+      var add = true;
+      args.forEach(arr => {
+        if (!arr.includes(el)) { add = false; }
+      });
+      if (add) { output.push(el); }
+    });
+    return output;
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    var args = Array.from(arguments).slice(1);
+    var output = [];
+    array.forEach(el => {
+      var keep = true;
+      args.forEach(el2 => {
+        if (el2.includes(el)) { keep = false; }
+      });
+      if (keep) { output.push(el); }
+    });
+    return output;
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
