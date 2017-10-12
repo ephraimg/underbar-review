@@ -442,19 +442,16 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
-    if (!Array.isArray(nestedArray)) {
-      return nestedArray;
-    }
     var output = [];
+
     nestedArray.forEach(function(el) {
       if (!Array.isArray(el)) {
         output.push(el);
       } else {
-        el.forEach(function(el2) {
-          output.push(_.flatten(el2));
-        });
+        output.push(..._.flatten(el));
       }
     });
+
     return output;
   };
 
